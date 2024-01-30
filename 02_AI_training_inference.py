@@ -187,7 +187,7 @@ client.set_registered_model_alias(uc_model_name, "prod", version)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #Diagram on batch
+# MAGIC <img width="1000" src="https://github.com/databricks-end-to-end-ai-workshop/uc_ai_workshop/blob/main/_resources/Demo_Overview_Inference_Batch.png"/>
 
 # COMMAND ----------
 
@@ -196,6 +196,11 @@ model_uri = f"models:/{uc_model_name}@prod"
 batch_input_df = spark.table(f"{catalog}.{dbName}.churn_bronze_customers").select("customer_id")
 with_predictions = fs.score_batch(model_uri, batch_input_df, result_type='string')
 display(with_predictions.join(spark.table(f"{catalog}.{dbName}.churn_bronze_customers").select("customer_id", "churn"), on="customer_id"))
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC <img width="1000" src="https://github.com/databricks-end-to-end-ai-workshop/uc_ai_workshop/blob/main/_resources/Demo_Overview_model_serving.png"/>
 
 # COMMAND ----------
 

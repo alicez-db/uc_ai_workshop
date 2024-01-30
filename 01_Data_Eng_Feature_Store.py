@@ -11,7 +11,7 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Diagram
+# MAGIC <img width="1000" src="https://github.com/databricks-end-to-end-ai-workshop/uc_ai_workshop/blob/main/_resources/Demo_Overview.png"/>
 
 # COMMAND ----------
 
