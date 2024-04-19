@@ -11,7 +11,7 @@
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC <img width="1000" src="https://github.com/databricks-end-to-end-ai-workshop/uc_ai_workshop/blob/main/_resources/Demo_Overview.png"/>
+# MAGIC ![Demo Overview](https://raw.githubusercontent.com/databricks-end-to-end-ai-workshop/uc_ai_workshop/main/_resources/Demo_Overview.png)
 
 # COMMAND ----------
 
@@ -50,11 +50,11 @@ from io import StringIO
 import pandas as pd
 import re
 
-#Dataset under apache license: https://github.com/IBM/telco-customer-churn-on-icp4d/blob/master/LICENSE
+# dataset under apache license: https://github.com/IBM/telco-customer-churn-on-icp4d/blob/master/LICENSE
 csv = requests.get("https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv").text
 df = pd.read_csv(StringIO(csv), sep=",")
 
-# Clean up column names
+# clean up column names
 df.columns = [re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower().replace("__", "_") for name in df.columns]
 df.columns = [re.sub(r'[\(\)]', '', name).lower() for name in df.columns]
 df.columns = [re.sub(r'[ -]', '_', name).lower() for name in df.columns]
@@ -73,7 +73,7 @@ spark.createDataFrame(df).write.mode("overwrite").option("overwriteSchema", "tru
 # COMMAND ----------
 
 # DBTITLE 1,Read in Bronze Delta table using Spark
-# Read into Spark
+# read into spark
 telcoDF = spark.table(f"{catalog}.{dbName}.churn_bronze_customers")
 display(telcoDF)
 
@@ -85,6 +85,7 @@ display(telcoDF)
 
 # COMMAND ----------
 
+# write SQL using the spark.sql syntax
 full_table_name = f"{catalog}.{dbName}.churn_bronze_customers"
 spark.sql("DROP TEMPORARY VARIABLE IF EXISTS fullTableName")
 spark.sql(f"DECLARE VARIABLE fullTableName STRING DEFAULT '{full_table_name}'")
@@ -144,7 +145,7 @@ def bin_tenure(value):
   else:
     return "other"
 
-
+# bin monthly charges into 7 buckets
 def bin_monthly_charge(value):
   if value <= 20:
     return "cheapest"
@@ -161,7 +162,7 @@ def bin_monthly_charge(value):
   else:
     return "most-expensive"
   
-# Take the log of features with skewed distributions
+# take the log of features with skewed distributions
 def log_transform(value):
   return float(np.log(value + 1)) # for 0 values
 
@@ -177,9 +178,10 @@ import pyspark.pandas as ps
 import numpy as np
 import re
 
+# create a function for feature engineering using the pandas API 
 def compute_churn_features(data):
   
-  # Convert to a dataframe compatible with the pandas API
+  # convert to a dataframe compatible with the pandas API
   data = data.pandas_api()
 
   data['tenure'] = data['tenure'].apply(bin_tenure)
@@ -188,17 +190,17 @@ def compute_churn_features(data):
   data['total_charges'] = data['total_charges'].astype(float)
   data['total_charges'] = data['total_charges'].apply(log_transform)
 
-  #then convert the monthly charges to a categorical feature
+  # then convert the monthly charges to a categorical feature
   data['monthly_charges'] = data['monthly_charges'].apply(bin_monthly_charge)
 
-    # Contract categorical -> duration in months
+    # contract categorical -> duration in months
   data['contract'] = data['contract'].replace({
     "Month-to-month": 1,
     "One year": 12,
     "Two year": 24
     })  
 
-  # Feature Selection - don't include label column in feature table
+  # feature selection - don't include label column in feature table
   
   data = data[['customer_id', 'gender', 'partner', 'dependents',
              'phone_service', 'multiple_lines', 'internet_service',
@@ -208,7 +210,7 @@ def compute_churn_features(data):
              'total_charges','tenure','monthly_charges']]
 
 
-  # Drop missing values
+  # drop missing values
   data = data.dropna()
   
   return data
@@ -226,11 +228,14 @@ from pyspark.sql.functions import udf
 from pyspark.sql.types import *
 from pyspark.sql.functions import col, log, when
 
-
+# bin tenure into decades
 bin_tenure_udf = udf(bin_tenure, StringType())
+# log transform the total charges column
 log_transform_udf = udf(log_transform, FloatType())
+# bin monthly charges into 7 buckets
 bin_monthly_charge_udf = udf(bin_monthly_charge, StringType())
 
+# create a function for feature engineering using the pandas API
 churn_features_sdf = telcoDF \
     .withColumn('tenure', bin_tenure_udf(telcoDF['tenure'])) \
     .withColumn('monthly_charges', bin_monthly_charge_udf(telcoDF['monthly_charges'])) \
@@ -258,14 +263,15 @@ display(churn_features_sdf)
 
 # COMMAND ----------
 
+# perform feature engineering on the churn features using pyspark syntaxes
 churn_features_df = compute_churn_features(telcoDF)
 display(churn_features_df)
 
 # COMMAND ----------
 
-print(churn_features_df.shape)
+print("Dataframe shape before dropping duplicates ", churn_features_df.shape)
 new_churn_features_df = churn_features_df.drop_duplicates(subset=['customer_id'])
-print(new_churn_features_df.shape)
+print("Dataframe shape After dropping duplicates ", new_churn_features_df.shape)
 
 # COMMAND ----------
 

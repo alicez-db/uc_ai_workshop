@@ -187,7 +187,7 @@ client.set_registered_model_alias(uc_model_name, "prod", version)
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC <img width="1000" src="https://github.com/databricks-end-to-end-ai-workshop/uc_ai_workshop/blob/main/_resources/Demo_Overview_Inference_Batch.png"/>
+# MAGIC <img width="1000" src="https://github.com/databricks-end-to-end-ai-workshop/uc_ai_workshop/blob/main/_resources/Demo_Overview_Inference_Batch.png?raw=true"/>
 
 # COMMAND ----------
 
@@ -211,7 +211,7 @@ display(with_predictions.join(spark.table(f"{catalog}.{dbName}.churn_bronze_cust
 # MAGIC
 # MAGIC Here is an example of doing A/B testing with two models
 # MAGIC
-# MAGIC <img width="1000" src="https://www.databricks.com/en-website-assets/static/ac5e1a8503689d2ddf650cfaa22856bf/24143.png"/>
+# MAGIC <img width="1000" src="https://www.databricks.com/en-website-assets/static/fa43cf6e8066a2b989f10fbf86120ba5/24143.png"/>
 
 # COMMAND ----------
 
@@ -226,4 +226,4 @@ display(with_predictions.join(spark.table(f"{catalog}.{dbName}.churn_bronze_cust
 # MAGIC
 # MAGIC **Unified solution** for data and models for holistic understanding
 # MAGIC
-# MAGIC <img width="1000" src="https://www.databricks.com/en-website-assets/static/ea6f50c87af58c320f597afdfcb80a5e/22607.png"/>
+# MAGIC <img width="1000" src="https://www.databricks.com/en-website-assets/static/920ea66119b097a9d7555c1f3530bb09/22607.png"/>
