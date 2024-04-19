@@ -296,11 +296,11 @@ from databricks.feature_store import FeatureStoreClient
 fs = FeatureStoreClient()
 
 try:
-  #drop table if exists
+  # drop table if exists
   fs.drop_table(f'{catalog}.{dbName}.dbdemos_mlops_churn_features')
 except:
   pass
-#Note: You might need to delete the FS table using the UI
+# note: you might need to delete the FS table using the UI
 churn_feature_table = fs.create_table(
   name=f'{catalog}.{dbName}.dbdemos_mlops_churn_features',
   primary_keys='customer_id',

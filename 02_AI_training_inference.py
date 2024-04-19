@@ -1,4 +1,5 @@
 # Databricks notebook source
+# initialize widgets
 dbutils.widgets.text('catalog_name', 'main', 'Enter Catalog Name')
 dbutils.widgets.text('schema_prefix', 'retail_e2e_ml_workshop', 'Enter Schema Prefix')
 
@@ -6,6 +7,7 @@ dbutils.widgets.text('schema_prefix', 'retail_e2e_ml_workshop', 'Enter Schema Pr
 
 import json
 
+# get catalog name and database name
 catalog = dbutils.widgets.get('catalog_name')
 schema_pre = dbutils.widgets.get('schema_prefix')
 
@@ -31,7 +33,7 @@ from databricks.feature_store import FeatureLookup, FeatureStoreClient
 
 fs = FeatureStoreClient()
 
-# Get our list of ID and labels
+# get our list of ID and labels
 training_dataset_key = spark.table(f"{catalog}.{dbName}.churn_bronze_customers").select("customer_id", "churn")
 
 model_feature_lookups = [
@@ -67,19 +69,19 @@ display(training_pd)
 
 sy_train = spark.createDataFrame(training_pd)
 
-# Reset the DataFrames for no churn (`dfn`) and churn (`dfy`)
+# reset the DataFrames for no churn (`dfn`) and churn (`dfy`)
 dfn = sy_train.filter(sy_train.churn == "No")
 dfy = sy_train.filter(sy_train.churn == "Yes")
 
-# Calculate summary metrics
+# calculate summary metrics
 N = sy_train.count()
 y = dfy.count()
 p = y/N
 
-# Create a more balanced training dataset
+# create a more balanced training dataset
 train_b = dfn.sample(False, p, seed = 42).union(dfy)
 
-# Print out metrics
+# print out metrics
 print("Total count: %s, Churn cases count: %s, Proportion of churn cases: %s" % (N, y, p))
 print("Balanced training dataset count: %s" % train_b.count())
 
@@ -133,15 +135,15 @@ x_sample = df_sample.drop(columns=["churn"])
 # getting the model created by AutoML 
 best_model = summary.best_trial.load_model()
 
-#Create a new run in the same experiment as our automl run.
+# create a new run in the same experiment as our automl run.
 with mlflow.start_run(run_name="best_fs_model", experiment_id=summary.experiment.experiment_id) as run:
-  #Use the feature store client to log our best model
+  # use the feature store client to log our best model
   fs.log_model(
               model=best_model, # object of your model
               artifact_path="model", #name of the Artifact under MlFlow
               flavor=mlflow.sklearn, # flavour of the model (our LightGBM model has a SkLearn Flavour)
               training_set=training_set, # training data you used to train your model with AutoML
-              input_example = x_sample #show a sample data set
+              input_example = x_sample # show a sample data set
               )
 
 # COMMAND ----------
@@ -174,7 +176,7 @@ uc_registered_model = mlflow.register_model(model_uri=f"runs:/{run.info.run_id}/
 from mlflow import MlflowClient
 client = MlflowClient()
 
-#moving model stages with an alias for the Unity Catalog registered model
+# moving model stages with an alias for the Unity Catalog registered model
 version = uc_registered_model.version #grabbing the model version of the model you just registered
 client.set_registered_model_alias(uc_model_name, "prod", version) 
 
